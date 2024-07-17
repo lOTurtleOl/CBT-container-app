@@ -1,4 +1,4 @@
-const URL = "https://6697cb7502f3150fb66f086d.mockapi.io/cbt_container_API/:endpoint";
+
 
 class MyObject {
     constructor(id, objectName, dateCreated, description) {
@@ -6,21 +6,26 @@ class MyObject {
         this.id = id;
         this.dateCreated = dateCreated;
         this.description = description;
+        this.subObjects = [];
+    }
+
+    addSubObject(name, comment) {
+        this.subObjects.push(new SubObject(name, comment));
     }
 }
 
-class subObject {
+class SubObject {
     constructor(name, comment) {
         this.name = name;
         this.comment = comment;
     }
 }
 
-class objectService {
-    static url = URL;
+class ObjectService {
+    static url = 'https://6697cb7502f3150fb66f086d.mockapi.io/cbt_container_API/objectData';
 
     static getAllObjects() {
-        return $.get(this.url());
+        return $.get(this.url);
     }
 
     static getObject(id) {
@@ -28,11 +33,11 @@ class objectService {
     }
 
     static createObject(object) {
-        return $.post(this.url, house);
+        return $.post(this.url, object);
     }
     static updateObject(object) {
         return $.ajax({
-            url: this.url + `/${house._id}`,
+            url: this.url + `/${object._id}`,
             dataType: "json",
             data: JSON.stringify(object),
             contentType: "application/json",
@@ -48,6 +53,43 @@ class objectService {
     }
 }
 
+class DOMManager {
+    static objects;
+
+    static getAllObjects() {
+        ObjectService.getAllObjects().then(objects => this.render(objects));
+    }
+
+    static render(objects) {
+        this.objects = objects;
+        $('#app').empty();
+        for (let object of objects) {
+            $('#app').prepend(
+                `<div id="${object._id}" class="card">
+                    <div class="card-header">
+                        <h2>${object.name}</h2>
+                        <button class="btn btn-danger" onclick="DOMManager.deleteObject('${object._id}')">Delete</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="card">
+                            <div class="row">
+                                <div class="col-sm">
+                                    <input type="text" id="${object._id}-subObject-name" class="form-control" placeholder="Sub Object Name">
+                                </div>
+                                <div class="col-sm">
+                                    <input type="text" id="${object._id}-subObject-comment" class="form-control" placeholder="Comment">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `
+            )
+        }
+    }
+}
+
+DOMManager.getAllObjects();
 
 
 
