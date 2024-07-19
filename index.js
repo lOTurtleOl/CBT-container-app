@@ -1,51 +1,49 @@
 
 
-class MyObject {
-    constructor(id, objectName, dateCreated, description) {
-        this.objectName = objectName;
+class Topic {
+    constructor(id, topicName) {
         this.id = id;
-        this.dateCreated = dateCreated;
-        this.description = description;
-        this.subObjects = [];
+        this.topicName = topicName;
+        this.subTopics = [];
     }
 
-    addSubObject(name, comment) {
-        this.subObjects.push(new SubObject(name, comment));
+    addSubTopic(name, comment) {
+        this.subTopics.push(new SubTopic(name, comment));
     }
 }
 
-class SubObject {
+class SubTopic {
     constructor(name, comment) {
         this.name = name;
         this.comment = comment;
     }
 }
 
-class ObjectService {
-    static url = 'https://6697cb7502f3150fb66f086d.mockapi.io/cbt_container_API/objectData';
+class TopicService {
+    static url = 'https://6697cb7502f3150fb66f086d.mockapi.io/cbt_container_API/topicData';
 
-    static getAllObjects() {
+    static getAllTopics() {
         return $.get(this.url);
     }
 
-    static getObject(id) {
+    static getTopic(id) {
         return $.get(this.url + `/${id}`);
     }
 
-    static createObject(object) {
-        return $.post(this.url, object);
+    static createTopic(topic) {
+        return $.post(this.url, topic);
     }
-    static updateObject(object) {
+    static updateTopic(topic) {
         return $.ajax({
-            url: this.url + `/${object._id}`,
+            url: this.url + `/${topic.id}`,
             dataType: "json",
-            data: JSON.stringify(object),
+            data: JSON.stringify(topic),
             contentType: "application/json",
             type: 'PUT'
         })
     }
     
-    static deleteObject(id) {
+    static deletetopic(id) {
         return $.ajax({
             url: this.url + `/${id}`,
             type: 'DELETE'
@@ -54,53 +52,95 @@ class ObjectService {
 }
 
 class DOMManager {
-    static objects;
+    static topics;
 
-    static getAllObjects() {
-        ObjectService.getAllObjects().then(objects => this.render(objects));
+    static getAllTopics() {
+        TopicService.getAllTopics().then(topics => this.render(topics));
     }
 
-    static render(objects) {
-        this.objects = objects;
+    static createTopic(topicName) {
+        TopicService.createTopic(new Topic(null, topicName))
+        .then(() => {
+            return TopicService.getAllTopics();
+        })
+        .then((topics) => this.render(topics));
+    }
+
+    static deletetopic(id) {
+        TopicService.deletetopic(id)
+        .then(() => {
+            return TopicService.getAllTopics();
+        })
+        .then((topics) => this.render(topics));
+    }
+
+    static addSubTopic(id) {
+        for (let topic of this.topics) {
+            if (topic.id == id) {
+                topic.addSubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val());
+                TopicService.updateTopic(topic)
+                .then(() => {
+                    return TopicService.getAllTopics();
+                })
+                .then((topics) => this.render(topics));
+            }
+        }
+    }
+
+    static render(topics) { // What does static do? Nick never explains. Please help me understand how render is different from calling the information from the API
+        this.topics = topics;
         $('#app').empty();
-        for (let object of objects) {
+        for (let topic of topics) {
             $('#app').prepend(
-                `<div id="${object._id}" class="card">
+                `<div id="${topic.id}" class="card">
                     <div class="card-header">
-                        <h2>${object.name}</h2>
-                        <button class="btn btn-danger" onclick="DOMManager.deleteObject('${object._id}')">Delete</button>
+                        <h2>${topic.topicName}</h2>
+                        <button class="btn btn-danger" onclick="DOMManager.deletetopic('${topic.id}')">Delete</button>
                     </div>
                     <div class="card-body">
                         <div class="card">
                             <div class="row">
                                 <div class="col-sm">
-                                    <input type="text" id="${object._id}-subObject-name" class="form-control" placeholder="Sub Object Name">
+                                    <input type="text" id="${topic.id}-SubTopic-name" class="form-control" placeholder="Sub topic Name">
                                 </div>
                                 <div class="col-sm">
-                                    <input type="text" id="${object._id}-subObject-comment" class="form-control" placeholder="Comment">
+                                    <input type="text" id="${topic.id}-SubTopic-comment" class="form-control" placeholder="Comment">
                                 </div>
                             </div>
+                            <button id="${topic.id}-new-SubTopic" onclick="DOMManager.addSubTopic('${topic._id}')" class="btn btn-primary form-control">Add</button>
                         </div>
                     </div>
-                </div>
-                `
-            )
+                </div><br>`         
+            );
+            for (let subTopic of topic.subTopics) {
+                $(`#${topic.id}`).find('.card-body').append(
+                    `<p>
+                    <span id="name-${subTopic.name}"><strong>Name: </strong> ${subTopic.name}</span>
+                    <span id="name-${subTopic.comment}"><strong>Name: </strong> ${subTopic.comment}</span>
+                    <button class="btn btn-danger" onclick="DOMManager.deleteSubTopic('${topic.id}', '${subTopic.id}')">Delete Sub topic</button>`
+                )
+            }
         }
     }
 }
 
-DOMManager.getAllObjects();
+$(document).on("click", '#create-new-topic', () => {
+    DOMManager.createTopic($('#new-topic-name').val());
+    $('#new-topic-name').val('');
+})
+
+DOMManager.getAllTopics();
 
 
 
 
-// //this function takes an object object and POSTs that into the API using ajax
-// function createObject(object) {
-//     console.log("createObject object:", object); //logs the object object to be POSTED
+// //this function takes an topic topic and POSTs that into the API using ajax
+// function createtopic(topic) {
+//     console.log("createtopic topic:", topic); //logs the topic topic to be POSTED
 
 //     return $.ajax({ //return the ajax request
 //         url: URL, //pass the url of the food group to be created
-//         data: JSON.stringify(object), // pass the object data to be created and turns it into JSON data
+//         data: JSON.stringify(topic), // pass the topic data to be created and turns it into JSON data
 //         dataType: "json", // set the data type to be json
 //         type: "POST", //set the type of request to be a POST request
 //         contentType: "application/json", //set the content type to be json
@@ -108,33 +148,33 @@ DOMManager.getAllObjects();
 //     });
 // }
 
-// //this function GETs object data from the API using jQuery
-// function getObjectList() {
-//     console.log("Should return an array of my object data", URL) //logs the URL where data is READ
-//     return $.get(URL); //get the list of objects from the URL
+// //this function GETs topic data from the API using jQuery
+// function gettopicList() {
+//     console.log("Should return an array of my topic data", URL) //logs the URL where data is READ
+//     return $.get(URL); //get the list of Topics from the URL
 // }
 
-// function updateObject(objectData) {
-//     console.log("createObject object:", objectData);
-//     let newObjectName = objectData.objectName;
-//     console.log("updateObject object name:", newObjectName)
-//     let newObjectId = parseInt(objectData.objectId);
-//     console.log("updateObject object name ID:" newObjectId)
+// function updatetopic(topicData) {
+//     console.log("createtopic topic:", topicData);
+//     let newtopicName = topicData.topicName;
+//     console.log("updatetopic topic name:", newtopicName)
+//     let newtopicId = parseInt(topicData.topicId);
+//     console.log("updatetopic topic name ID:" newtopicId)
 //     return $.ajax({
-//         url:`${URL}/${newObjectId}`,
+//         url:`${URL}/${newtopicId}`,
 //         dataType: "json",
-//         data: JSON.stringify({ objectName: newObjectName}),
+//         data: JSON.stringify({ topicName: newtopicName}),
 //         contentType: "application/json",
 //         crossDomain: true,
 //         type: "PUT",
 //     })
 // }
 
-// function deleteFoodGroup(objectId) {
-//     console.log("deleteObject object name ID:", parseInt(objectId.id));
+// function deleteFoodGroup(topicId) {
+//     console.log("deletetopic topic name ID:", parseInt(topicId.id));
 
 //     return $.ajax({
-//         url: `${URL}/${parseInt(objectId.id)}`,
+//         url: `${URL}/${parseInt(topicId.id)}`,
 //         type: "DELETE",
 //     })
 // }
