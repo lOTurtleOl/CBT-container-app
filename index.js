@@ -43,7 +43,7 @@ class TopicService {
         })
     }
     
-    static deletetopic(id) {
+    static deleteTopic(id) {
         return $.ajax({
             url: this.url + `/${id}`,
             type: 'DELETE'
@@ -66,8 +66,8 @@ class DOMManager {
         .then((topics) => this.render(topics));
     }
 
-    static deletetopic(id) {
-        TopicService.deletetopic(id)
+    static deleteTopic(id) {
+        TopicService.deleteTopic(id)
         .then(() => {
             return TopicService.getAllTopics();
         })
@@ -77,12 +77,29 @@ class DOMManager {
     static addSubTopic(id) {
         for (let topic of this.topics) {
             if (topic.id == id) {
-                topic.addSubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val());
+                topic.subTopics.push(new SubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
                 TopicService.updateTopic(topic)
                 .then(() => {
                     return TopicService.getAllTopics();
                 })
                 .then((topics) => this.render(topics));
+            }
+        }
+    }
+
+    static deleteSubTopic(topicId, subTopicId) {
+        for (let topic of this.topics) {
+            if (topic.id == topicId) {
+                for (let subTopic of topic.subTopics) {
+                    if (subTopic.id == subTopicId) {
+                        topic.subTopics.splice(topic.subTopics.indexOf(subTopic), 1);
+                        TopicService.updateTopic(topic)
+                        .then(() => {
+                            return TopicService.getAllTopics();
+                        })
+                        .then((topics) => this.render(topics));
+                    }
+                }
             }
         }
     }
@@ -95,19 +112,19 @@ class DOMManager {
                 `<div id="${topic.id}" class="card">
                     <div class="card-header">
                         <h2>${topic.topicName}</h2>
-                        <button class="btn btn-danger" onclick="DOMManager.deletetopic('${topic.id}')">Delete</button>
+                        <button class="btn btn-danger" onclick="DOMManager.deleteTopic('${topic.id}')">Delete</button>
                     </div>
                     <div class="card-body">
                         <div class="card">
                             <div class="row">
                                 <div class="col-sm">
-                                    <input type="text" id="${topic.id}-SubTopic-name" class="form-control" placeholder="Sub topic Name">
+                                    <input type="text" id="${topic.id}-subTopic-name" class="form-control" placeholder="Sub-Topic Name">
                                 </div>
                                 <div class="col-sm">
-                                    <input type="text" id="${topic.id}-SubTopic-comment" class="form-control" placeholder="Comment">
+                                    <input type="text" id="${topic.id}-subTopic-comment" class="form-control" placeholder="Comment">
                                 </div>
                             </div>
-                            <button id="${topic.id}-new-SubTopic" onclick="DOMManager.addSubTopic('${topic._id}')" class="btn btn-primary form-control">Add</button>
+                            <button id="${topic.id}-new-SubTopic" onclick="DOMManager.addSubTopic('${topic.id}')" class="btn btn-primary form-control">Add</button>
                         </div>
                     </div>
                 </div><br>`         
@@ -171,7 +188,7 @@ DOMManager.getAllTopics();
 // }
 
 // function deleteFoodGroup(topicId) {
-//     console.log("deletetopic topic name ID:", parseInt(topicId.id));
+//     console.log("deleteTopic topic name ID:", parseInt(topicId.id));
 
 //     return $.ajax({
 //         url: `${URL}/${parseInt(topicId.id)}`,
