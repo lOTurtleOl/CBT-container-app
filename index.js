@@ -7,12 +7,13 @@ class Topic {
         this.subTopics = [];
     }
 
-    findSubTopicId() {
+    addSubTopic(name, comment) {
         const subTopicId = this.subTopics.length ?
             Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
             1;
         return subTopicId;
     }
+    
 }
 
 class SubTopic {
@@ -20,13 +21,6 @@ class SubTopic {
         this.id = id;
         this.name = name;
         this.comment = comment;
-    }
-
-    findSubTopicId() {
-        const subTopicId = this.subTopics.length ?
-            Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
-            1;
-        return subTopicId;
     }
 }
 
@@ -88,7 +82,8 @@ class DOMManager {
     static addSubTopic(id) {
         for (let topic of this.topics) {
             if (topic.id == id) {
-                topic.subTopics.push(new SubTopic($(findSubTopicId(), `#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
+                let findSubId = this.addSubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val());
+                topic.subTopics.push(new SubTopic(findSubId, $(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
                 TopicService.updateTopic(topic)
                 .then(() => {
                     return TopicService.getAllTopics();
@@ -143,8 +138,8 @@ class DOMManager {
             for (let subTopic of topic.subTopics) {
                 $(`#${topic.id}`).find('.card-body').append(
                     `<p>
-                    <span id="name-${subTopic.name}"><strong>Name: </strong> ${subTopic.name}</span>
-                    <span id="name-${subTopic.comment}"><strong>Comment: </strong> ${subTopic.comment}</span>
+                    <span id="name-${subTopic.id}"><strong>Name: </strong> ${subTopic.name}</span>
+                    <span id="comment-${subTopic.id}"><strong>Comment: </strong> ${subTopic.comment}</span>
                     <button class="btn btn-danger" onclick="DOMManager.deleteSubTopic('${topic.id}', '${subTopic.id}')">Delete Sub topic</button>`
                 )
             }
