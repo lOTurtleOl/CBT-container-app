@@ -83,7 +83,7 @@ class DOMManager {
         for (let topic of this.topics) {
             if (topic.id == id) {
                 let findSubId = this.addSubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val());
-                topic.subTopics.push(new SubTopic(findSubId, $(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
+                topic.subTopics.push(new SubTopic($(findSubId), $(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
                 TopicService.updateTopic(topic)
                 .then(() => {
                     return TopicService.getAllTopics();
