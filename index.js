@@ -7,13 +7,17 @@ class Topic {
         this.subTopics = [];
     }
 
-    addSubTopic(name, comment) {
-        this.subTopics.push(new SubTopic(name, comment));
+    static addSubTopic(name, comment) {
+        const subTopicId = this.subTopics.length ?
+            Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
+            1;
+        this.subTopics.push(new SubTopic(subTopicId, name, comment));
     }
 }
 
 class SubTopic {
-    constructor(name, comment) {
+    constructor(id, name, comment) {
+        this.id = id;
         this.name = name;
         this.comment = comment;
     }
@@ -77,7 +81,9 @@ class DOMManager {
     static addSubTopic(id) {
         for (let topic of this.topics) {
             if (topic.id == id) {
-                topic.subTopics.push(new SubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
+                let subTopicName = $(`#${topic.id}-subTopic-name`).val();
+                let subTopicComment = $(`#${topic.id}-subTopic-comment`).val();
+                Topic.addSubTopic(subTopicName, subTopicComment);
                 TopicService.updateTopic(topic)
                 .then(() => {
                     return TopicService.getAllTopics();
@@ -104,7 +110,7 @@ class DOMManager {
         }
     }
 
-    static render(topics) { // What does static do? Nick never explains. Please help me understand how render is different from calling the information from the API
+    static render(topics) {
         this.topics = topics;
         $('#app').empty();
         for (let topic of topics) {
@@ -133,7 +139,7 @@ class DOMManager {
                 $(`#${topic.id}`).find('.card-body').append(
                     `<p>
                     <span id="name-${subTopic.name}"><strong>Name: </strong> ${subTopic.name}</span>
-                    <span id="name-${subTopic.comment}"><strong>Name: </strong> ${subTopic.comment}</span>
+                    <span id="name-${subTopic.comment}"><strong>Comment: </strong> ${subTopic.comment}</span>
                     <button class="btn btn-danger" onclick="DOMManager.deleteSubTopic('${topic.id}', '${subTopic.id}')">Delete Sub topic</button>`
                 )
             }
