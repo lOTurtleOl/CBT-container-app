@@ -7,7 +7,7 @@ class Topic {
         this.subTopics = [];
     }
 
-    addSubTopic(name, comment) {
+    addSubTopic() {
         const subTopicId = this.subTopics.length ?
             Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
             1;
@@ -82,7 +82,7 @@ class DOMManager {
     static addSubTopic(id) {
         for (let topic of this.topics) {
             if (topic.id == id) {
-                let findSubId = this.addSubTopic($(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val());
+                let findSubId = this.addSubTopic();
                 topic.subTopics.push(new SubTopic($(findSubId), $(`#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
                 TopicService.updateTopic(topic)
                 .then(() => {
@@ -124,7 +124,7 @@ class DOMManager {
                         <div class="card">
                             <div class="row">
                                 <div class="col-sm">
-                                    <input type="text" id="${topic.id}-subTopic-name" class="form-control" placeholder="Sub-Topic Name">
+                                    <input type="text" id="${topic.id}-subTopic-name" class="form-control mb-3" placeholder="Sub-Topic Name">
                                 </div>
                                 <div class="col-sm">
                                     <input type="text" id="${topic.id}-subTopic-comment" class="form-control" placeholder="Comment">
@@ -137,10 +137,10 @@ class DOMManager {
             );
             for (let subTopic of topic.subTopics) {
                 $(`#${topic.id}`).find('.card-body').append(
-                    `<p>
-                    <span id="name-${subTopic.id}"><strong>Name: </strong> ${subTopic.name}</span>
-                    <span id="comment-${subTopic.id}"><strong>Comment: </strong> ${subTopic.comment}</span>
-                    <button class="btn btn-danger" onclick="DOMManager.deleteSubTopic('${topic.id}', '${subTopic.id}')">Delete Sub topic</button>`
+                    `<p class="mt-4 row">
+                    <span class="col-4" id="name-${subTopic.id}"><strong>Name: </strong> ${subTopic.name}</span>
+                    <span class="col-4" id="comment-${subTopic.id}"><strong>Comment: </strong> ${subTopic.comment}</span>
+                    <button class="col-4 btn btn-danger" onclick="DOMManager.deleteSubTopic('${topic.id}', '${subTopic.id}')">Delete Sub topic</button>`
                 )
             }
         }
