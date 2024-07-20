@@ -7,11 +7,11 @@ class Topic {
         this.subTopics = [];
     }
 
-    static addSubTopic(name, comment) {
+    findSubTopicId() {
         const subTopicId = this.subTopics.length ?
             Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
             1;
-        this.subTopics.push(new SubTopic(subTopicId, name, comment));
+        return subTopicId;
     }
 }
 
@@ -20,6 +20,13 @@ class SubTopic {
         this.id = id;
         this.name = name;
         this.comment = comment;
+    }
+
+    findSubTopicId() {
+        const subTopicId = this.subTopics.length ?
+            Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
+            1;
+        return subTopicId;
     }
 }
 
@@ -81,9 +88,7 @@ class DOMManager {
     static addSubTopic(id) {
         for (let topic of this.topics) {
             if (topic.id == id) {
-                let subTopicName = $(`#${topic.id}-subTopic-name`).val();
-                let subTopicComment = $(`#${topic.id}-subTopic-comment`).val();
-                Topic.addSubTopic(subTopicName, subTopicComment);
+                topic.subTopics.push(new SubTopic($(findSubTopicId(), `#${topic.id}-subTopic-name`).val(), $(`#${topic.id}-subTopic-comment`).val()));
                 TopicService.updateTopic(topic)
                 .then(() => {
                     return TopicService.getAllTopics();
