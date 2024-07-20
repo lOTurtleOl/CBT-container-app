@@ -1,5 +1,5 @@
 
-
+// topic class with basic constructor
 class Topic {
     constructor(id, topicName) {
         this.id = id;
@@ -7,6 +7,7 @@ class Topic {
         this.subTopics = [];
     }
 
+    // method to grab id for new subtopic. use tertiary operator and grab max id, return new id
     addSubTopic() {
         const subTopicId = this.subTopics.length ?
             Math.max(...this.subTopics.map(sub => sub.id)) + 1 :
@@ -16,6 +17,7 @@ class Topic {
     
 }
 
+// subtopic class
 class SubTopic {
     constructor(id, name, comment) {
         this.id = id;
@@ -24,20 +26,26 @@ class SubTopic {
     }
 }
 
+// class for working with topic data
 class TopicService {
-    static url = 'https://6697cb7502f3150fb66f086d.mockapi.io/cbt_container_API/topicData';
+    static url = 'https://6697cb7502f3150fb66f086d.mockapi.io/cbt_container_API/topicData'; // mock API
 
+    // get request for topics
     static getAllTopics() {
         return $.get(this.url);
     }
 
+    // get request for specific topic
     static getTopic(id) {
         return $.get(this.url + `/${id}`);
     }
 
+    // create new topic and post
     static createTopic(topic) {
         return $.post(this.url, topic);
     }
+
+    // update topic method
     static updateTopic(topic) {
         return $.ajax({
             url: this.url + `/${topic.id}`,
@@ -48,6 +56,7 @@ class TopicService {
         })
     }
     
+    // delete topic method
     static deleteTopic(id) {
         return $.ajax({
             url: this.url + `/${id}`,
@@ -56,13 +65,16 @@ class TopicService {
     }
 }
 
+// class for affecting the DOM
 class DOMManager {
     static topics;
 
+    // call getAllTopics and then render
     static getAllTopics() {
         TopicService.getAllTopics().then(topics => this.render(topics));
     }
 
+    // call create topic and then render
     static createTopic(topicName) {
         TopicService.createTopic(new Topic(null, topicName))
         .then(() => {
@@ -71,6 +83,7 @@ class DOMManager {
         .then((topics) => this.render(topics));
     }
 
+    // call delete topic, pass id to delete, render page
     static deleteTopic(id) {
         TopicService.deleteTopic(id)
         .then(() => {
@@ -79,6 +92,7 @@ class DOMManager {
         .then((topics) => this.render(topics));
     }
 
+    // static method, pass id, find subId, push new subTopic using user input for parameters to subTopics array
     static addSubTopic(id) {
         for (let topic of this.topics) {
             if (topic.id == id) {
@@ -93,6 +107,7 @@ class DOMManager {
         }
     }
 
+    // delete subTopic. check ids, splice index of id, render
     static deleteSubTopic(topicId, subTopicId) {
         for (let topic of this.topics) {
             if (topic.id == topicId) {
@@ -110,11 +125,12 @@ class DOMManager {
         }
     }
 
+    // render method, take topics argument
     static render(topics) {
         this.topics = topics;
-        $('#app').empty();
+        $('#app').empty(); // pull app id from document and empty
         for (let topic of topics) {
-            $('#app').prepend(
+            $('#app').prepend( // prepend to app id a card with the topic name as header, delete button, inputs and add subTopic button
                 `<div id="${topic.id}" class="card">
                     <div class="card-header">
                         <h2>${topic.topicName}</h2>
@@ -135,6 +151,7 @@ class DOMManager {
                     </div>
                 </div><br>`         
             );
+            // for each subTopic in array, find the card body and append a grid of subTopic information with delete button
             for (let subTopic of topic.subTopics) {
                 $(`#${topic.id}`).find('.card-body').append(
                     `<p class="mt-4 row">
@@ -147,57 +164,12 @@ class DOMManager {
     }
 }
 
+// on click, create new topic id with new topic name using the value entered, then reset value to empty string
 $(document).on("click", '#create-new-topic', () => {
     DOMManager.createTopic($('#new-topic-name').val());
     $('#new-topic-name').val('');
 })
 
+// call initial render
 DOMManager.getAllTopics();
 
-
-
-
-// //this function takes an topic topic and POSTs that into the API using ajax
-// function createtopic(topic) {
-//     console.log("createtopic topic:", topic); //logs the topic topic to be POSTED
-
-//     return $.ajax({ //return the ajax request
-//         url: URL, //pass the url of the food group to be created
-//         data: JSON.stringify(topic), // pass the topic data to be created and turns it into JSON data
-//         dataType: "json", // set the data type to be json
-//         type: "POST", //set the type of request to be a POST request
-//         contentType: "application/json", //set the content type to be json
-//         crossDomain: true, //set the cross domain to be true
-//     });
-// }
-
-// //this function GETs topic data from the API using jQuery
-// function gettopicList() {
-//     console.log("Should return an array of my topic data", URL) //logs the URL where data is READ
-//     return $.get(URL); //get the list of Topics from the URL
-// }
-
-// function updatetopic(topicData) {
-//     console.log("createtopic topic:", topicData);
-//     let newtopicName = topicData.topicName;
-//     console.log("updatetopic topic name:", newtopicName)
-//     let newtopicId = parseInt(topicData.topicId);
-//     console.log("updatetopic topic name ID:" newtopicId)
-//     return $.ajax({
-//         url:`${URL}/${newtopicId}`,
-//         dataType: "json",
-//         data: JSON.stringify({ topicName: newtopicName}),
-//         contentType: "application/json",
-//         crossDomain: true,
-//         type: "PUT",
-//     })
-// }
-
-// function deleteFoodGroup(topicId) {
-//     console.log("deleteTopic topic name ID:", parseInt(topicId.id));
-
-//     return $.ajax({
-//         url: `${URL}/${parseInt(topicId.id)}`,
-//         type: "DELETE",
-//     })
-// }
